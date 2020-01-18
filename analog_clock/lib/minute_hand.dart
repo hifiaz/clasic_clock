@@ -13,11 +13,11 @@ import 'hand.dart';
 /// The hand's length scales based on the clock's size.
 /// This hand is used to build the second and minute hands, and demonstrates
 /// building a custom hand.
-class DrawnHand extends Hand {
+class MinuteHand extends Hand {
   /// Create a const clock [Hand].
   ///
   /// All of the parameters are required and must not be null.
-  const DrawnHand({
+  const MinuteHand({
     @required Color color,
     @required this.thickness,
     @required double size,

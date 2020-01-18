@@ -4,9 +4,10 @@
 
 import 'dart:async';
 
-import 'package:flutter_clock_helper/model.dart';
+import 'package:analog_clock/minute_hand.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
+import 'package:flutter_clock_helper/model.dart';
 import 'package:intl/intl.dart';
 import 'package:vector_math/vector_math_64.dart' show radians;
 
@@ -35,7 +36,7 @@ class AnalogClock extends StatefulWidget {
 class _AnalogClockState extends State<AnalogClock> {
   var _now = DateTime.now();
   var _temperature = '';
-  var _temperatureRange = '';
+  // var _temperatureRange = '';
   var _condition = '';
   var _location = '';
   Timer _timer;
@@ -68,7 +69,7 @@ class _AnalogClockState extends State<AnalogClock> {
   void _updateModel() {
     setState(() {
       _temperature = widget.model.temperatureString;
-      _temperatureRange = '(${widget.model.low} - ${widget.model.highString})';
+      // _temperatureRange = '(${widget.model.low} - ${widget.model.highString})';
       _condition = widget.model.weatherString;
       _location = widget.model.location;
     });
@@ -86,6 +87,24 @@ class _AnalogClockState extends State<AnalogClock> {
     });
   }
 
+  String weather(String value) {
+    if (value == 'foggy') {
+      return 'assets/foggy.png';
+    } else if (value == 'rainy') {
+      return 'assets/rainy.png';
+    } else if (value == 'snowy') {
+      return 'assets/snowy.png';
+    } else if (value == 'sunny') {
+      return 'assets/sunny.png';
+    } else if (value == 'thunderstorm') {
+      return 'assets/thunderstorm.png';
+    } else if (value == 'windy') {
+      return 'assets/windy.png';
+    } else {
+      return 'assets/cloudy.png';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     // There are many ways to apply themes to your clock. Some are:
@@ -98,33 +117,33 @@ class _AnalogClockState extends State<AnalogClock> {
     final customTheme = Theme.of(context).brightness == Brightness.light
         ? Theme.of(context).copyWith(
             // Hour hand.
-            primaryColor: Color(0xFF4285F4),
+            primaryColor: Color(0xFFddd4c4),
             // Minute hand.
-            highlightColor: Color(0xFF8AB4F8),
+            highlightColor: Color(0xFFddd4c4),
             // Second hand.
-            accentColor: Color(0xFF669DF6),
-            backgroundColor: Color(0xFFD2E3FC),
+            accentColor: Color(0xFFfb3b2f),
+            backgroundColor: Color(0xFF12445f),
           )
         : Theme.of(context).copyWith(
             primaryColor: Color(0xFFD2E3FC),
-            highlightColor: Color(0xFF4285F4),
+            highlightColor: Color(0xFFddd4c4),
             accentColor: Color(0xFF8AB4F8),
             backgroundColor: Color(0xFF3C4043),
           );
 
     final time = DateFormat.Hms().format(DateTime.now());
-    final weatherInfo = DefaultTextStyle(
-      style: TextStyle(color: customTheme.primaryColor),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(_temperature),
-          Text(_temperatureRange),
-          Text(_condition),
-          Text(_location),
-        ],
-      ),
-    );
+    // final weatherInfo = DefaultTextStyle(
+    //   style: TextStyle(color: customTheme.primaryColor),
+    //   child: Column(
+    //     crossAxisAlignment: CrossAxisAlignment.start,
+    //     children: [
+    //       Text(_temperature),
+    //       Text(_temperatureRange),
+    //       Text(_condition),
+    //       Text(_location),
+    //     ],
+    //   ),
+    // );
 
     return Semantics.fromProperties(
       properties: SemanticsProperties(
@@ -135,19 +154,26 @@ class _AnalogClockState extends State<AnalogClock> {
         color: customTheme.backgroundColor,
         child: Stack(
           children: [
+            Align(
+              alignment: Alignment.topCenter,
+              child: line(customTheme.highlightColor),
+            ),
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: line(customTheme.highlightColor),
+            ),
+            Align(
+              alignment: Alignment.centerRight,
+              child: line(customTheme.highlightColor),
+            ),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: line(customTheme.highlightColor),
+            ),
+            // temperature(),
+            location(),
             // Example of a hand drawn with [CustomPainter].
-            DrawnHand(
-              color: customTheme.accentColor,
-              thickness: 4,
-              size: 1,
-              angleRadians: _now.second * radiansPerTick,
-            ),
-            DrawnHand(
-              color: customTheme.highlightColor,
-              thickness: 16,
-              size: 0.9,
-              angleRadians: _now.minute * radiansPerTick,
-            ),
+
             // Example of a hand drawn with [Container].
             ContainerHand(
               color: Colors.transparent,
@@ -160,22 +186,135 @@ class _AnalogClockState extends State<AnalogClock> {
                   width: 32,
                   height: 150,
                   decoration: BoxDecoration(
-                    color: customTheme.primaryColor,
+                    color: Color(0xff161614),
+                    borderRadius: BorderRadius.all(Radius.circular(32.0)),
+                  ),
+                  child: Container(
+                    width: 20,
+                    height: 100,
+                    margin: EdgeInsets.only(
+                      bottom: 40.0,
+                      right: 8.0,
+                      left: 8.0,
+                      top: 8.0,
+                    ),
+                    decoration: BoxDecoration(
+                      color: customTheme.highlightColor,
+                      borderRadius: BorderRadius.all(Radius.circular(32.0)),
+                    ),
                   ),
                 ),
               ),
             ),
-            Positioned(
-              left: 0,
-              bottom: 0,
-              child: Padding(
-                padding: const EdgeInsets.all(8),
-                child: weatherInfo,
-              ),
+            MinuteHand(
+              color: customTheme.highlightColor,
+              thickness: 8,
+              size: 0.9,
+              angleRadians: _now.minute * radiansPerTick,
             ),
+            DrawnHand(
+              color: customTheme.accentColor,
+              thickness: 3,
+              size: 1,
+              angleRadians: _now.second * radiansPerTick,
+            ),
+
+            // Positioned(
+            //   left: 0,
+            //   bottom: 0,
+            //   child: Padding(
+            //     padding: const EdgeInsets.all(8),
+            //     child: weatherInfo,
+            //   ),
+            // ),
           ],
         ),
       ),
     );
   }
+
+  Widget location() {
+    return Align(
+      alignment: Alignment.centerRight,
+      child: Padding(
+        padding: const EdgeInsets.only(right: 100.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Text(
+              _location,
+              style: TextStyle(color: Colors.white),
+            ),
+            Text(
+              _temperature,
+              style: TextStyle(color: Colors.white),
+            ),
+            SizedBox(height: 5),
+            condition()
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget condition() {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 30.0),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Container(
+            width: 45.0,
+            height: 45.0,
+            decoration: BoxDecoration(
+                color: Color(0xff161614),
+                border: Border.all(
+                  width: 3.0,
+                  color: Colors.black,
+                ),
+                borderRadius: BorderRadius.circular(50)),
+            child: Padding(
+                padding: EdgeInsets.all(5),
+                child: Image.asset(
+                  weather(_condition),
+                )),
+          ),
+          SizedBox(height: 5),
+          Text(
+            _condition,
+            style: TextStyle(color: Colors.white),
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget line(Color value) {
+    return Container(
+      width: 35.0,
+      height: 15.0,
+      margin: EdgeInsets.all(10.0),
+      decoration: BoxDecoration(
+        color: value,
+        borderRadius: BorderRadius.all(Radius.circular(32.0)),
+      ),
+    );
+  }
+}
+
+class TriangleClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    final path = Path();
+    path.lineTo(size.width, 0.0);
+    path.lineTo(size.width / 2, size.height);
+    path.close();
+    return path;
+  }
+
+  @override
+  bool shouldReclip(TriangleClipper oldClipper) => false;
 }
